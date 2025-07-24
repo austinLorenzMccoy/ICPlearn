@@ -1,22 +1,29 @@
 # 🎓 ICPlearn - Decentralized AI-Powered Learning Platform
 
-<div align="center">
+[![Internet Computer](https://img.shields.io/badge/Internet%20Computer-Protocol-blue)](https://internetcomputer.org/)
+[![Kybra](https://img.shields.io/badge/Kybra-Python%20SDK-green)](https://demergent-labs.github.io/kybra/)
+[![AI Powered](https://img.shields.io/badge/AI-Powered-purple)](https://openai.com/)
+[![Bitcoin Rewards](https://img.shields.io/badge/Bitcoin-Rewards-orange)](https://bitcoin.org/)
+[![Tests](https://img.shields.io/badge/Tests-23%2F23%20Passing-brightgreen)](./backend/test_all_services.py)
+[![Deployment](https://img.shields.io/badge/Deployment-Ready-success)](./backend/docs/DEPLOYMENT_OPTIONS.md)
 
-![ICPlearn Logo](https://img.shields.io/badge/ICPlearn-AI%20Education-blue?style=for-the-badge&logo=internetcomputer)
+> 🚀 **Transforming Education Through Decentralized AI, Gamification, and Cryptocurrency Rewards**
 
-**🚀 Revolutionizing Education on the Internet Computer Protocol**
+ICPlearn is a groundbreaking educational platform that combines the power of artificial intelligence, blockchain technology, and gamification to create an immersive, rewarding learning experience. Built on the Internet Computer Protocol, it offers unprecedented security, scalability, and decentralization.
 
-*Where Artificial Intelligence meets Blockchain Technology for the Future of Learning*
+## 📁 Repository Structure
 
-[![Internet Computer](https://img.shields.io/badge/Internet%20Computer-Protocol-29ABE2?style=flat-square&logo=internetcomputer)](https://internetcomputer.org/)
-[![Kybra](https://img.shields.io/badge/Kybra-Python%20SDK-green?style=flat-square)](https://demergent-labs.github.io/kybra/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square)]()
-[![Deployment](https://img.shields.io/badge/Deployment-Ready-success?style=flat-square)]()
-
-</div>
-
----
+```
+icplearn/
+├── 📁 backend/          # Internet Computer backend (Kybra Python)
+│   ├── 📁 src/          # Source code
+│   ├── 📁 docs/         # Backend documentation
+│   ├── 📁 tests/        # Test suites
+│   └── 📄 dfx.json      # Canister configuration
+├── 📁 frontend/         # Frontend application (React/Next.js)
+│   └── 📄 (to be created by frontend developer)
+└── 📄 README.md         # This file
+```
 
 ## 🌟 Vision Statement
 
@@ -112,36 +119,44 @@
 └── 🔧 CANDID_UI_ACCESS.md                # UI access guide
 ```
 
-## 🚀 Quick Start Guide
+## 🚀 Quick Start
 
-### 📋 Prerequisites
-```bash
-# Install DFX (Internet Computer SDK)
-curl -fsSL https://internetcomputer.org/install.sh | sh
+### Prerequisites
+- Python 3.11+
+- Node.js 18+ (for dfx)
+- Internet Computer SDK (`dfx`)
 
-# Install Python 3.11+
-python3 --version
+### Backend Setup
 
-# Install Kybra
-pip install kybra
-```
-
-### 🔧 Installation
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd icplearn_icp
+cd icplearn/backend
+
+# Install dfx (Internet Computer SDK)
+sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
 
 # Start local Internet Computer replica
-dfx start --clean
+dfx start --background
 
-# Deploy the backend canister
-dfx deploy icplearn_backend
+# Deploy the backend
+dfx deploy
 
-# 🎉 Your ICPlearn backend is now running!
+# Run tests
+python test_all_services.py
 ```
 
-### 🧪 Testing
+### Frontend Setup
+
+```bash
+# Navigate to frontend directory
+cd ../frontend
+
+# Frontend setup will be added by frontend developer
+# Typically: npm install && npm run dev
+```
+
+## 🧪 Testing
 ```bash
 # Run comprehensive test suite
 python3 test_all_services.py

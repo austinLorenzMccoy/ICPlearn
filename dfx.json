@@ -1,0 +1,40 @@
+{
+  "canisters": {
+    "icplearn_backend": {
+      "type": "custom",
+      "build": "python3.11 -m kybra icplearn_backend src/icplearn_backend/main.py",
+      "candid": "src/icplearn_backend/icplearn_backend.did",
+      "wasm": ".kybra/icplearn_backend/icplearn_backend.wasm",
+      "gzip": true,
+      "source": ["src/icplearn_backend"],
+      "metadata": [
+        {
+          "name": "candid:service"
+        }
+      ]
+    },
+    "test_stable_storage": {
+      "type": "custom",
+      "build": "python3.11 -m kybra test_stable_storage test_stable_storage.py",
+      "candid": "test_stable_storage.did",
+      "wasm": ".kybra/test_stable_storage/test_stable_storage.wasm",
+      "gzip": true
+    },
+    "icplearn_assets": {
+      "dependencies": ["icplearn_backend"],
+      "frontend": {
+        "entrypoint": "src/icplearn_assets/src/index.html"
+      },
+      "source": ["src/icplearn_assets/assets", "dist/icplearn_assets/"],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

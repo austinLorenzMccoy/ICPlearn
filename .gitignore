@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local development
+.venv/
+venv/
+ENV/
+
+# Logs
+*.log
+
+# Kybra specific
+.kybra/
+.dfx/
+
+# Node modules
+node_modules/
+
+# Build output
+target/
+
+# Local Netlify folder
+.netlify/

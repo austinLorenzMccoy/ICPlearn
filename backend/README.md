@@ -19,6 +19,12 @@ backend/
 │   │   ├── 📁 models/          # Data models and types
 │   │   └── 📁 services/        # Service implementations
 │   └── 📁 declarations/        # Generated Candid declarations
+├── 📁 tests/                   # Comprehensive test suites
+│   ├── 📄 test_all_services.py # Main test suite (23 tests)
+│   ├── 📄 test_integration.py  # Real-time canister tests
+│   ├── 📄 test_user_management.py # User service tests
+│   ├── 📄 run_all_tests.py     # Test runner script
+│   └── 📄 README.md            # Test documentation
 ├── 📁 docs/                    # Backend documentation
 │   ├── 📄 API_DOCUMENTATION.md
 │   ├── 📄 DEPLOYMENT_OPTIONS.md
@@ -28,7 +34,6 @@ backend/
 │   └── 📄 REPOSITORY_CHECKLIST.md
 ├── 📄 dfx.json                 # Canister configuration
 ├── 📄 pyproject.toml           # Python dependencies
-├── 📄 test_*.py                # Comprehensive test suites
 └── 📄 README.md                # This file
 ```
 
@@ -84,13 +89,16 @@ dfx canister call icplearn_backend get_greeting
 
 ```bash
 # Run comprehensive test suite (23 tests)
-python test_all_services.py
+python tests/test_all_services.py
 
 # Run integration tests with real canister calls
-python test_integration.py
+python tests/test_integration.py
 
 # Run specific service tests
-python test_user_management.py
+python tests/test_user_management.py
+
+# Use test runner script
+python tests/run_all_tests.py
 ```
 
 ## 🌐 API Access
@@ -203,14 +211,18 @@ All 22 backend functions are ready for frontend consumption with:
 ### **Test Commands**
 ```bash
 # All services test
-python test_all_services.py
+python tests/test_all_services.py
 
 # Integration tests
-python test_integration.py
+python tests/test_integration.py
 
 # Specific service tests
-python test_user_management.py
-python test_gamification.py
+python tests/test_user_management.py
+python tests/test_gamification.py
+
+# Test runner scripts
+python tests/run_all_tests.py
+./tests/run_tests.sh
 ```
 
 ## 🔮 Next Steps

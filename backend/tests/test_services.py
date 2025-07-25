@@ -13,7 +13,7 @@ import json
 from unittest.mock import patch, MagicMock
 
 # Add the src directory to the Python path
-sys.path.append(os.path.join(os.path.dirname(__file__), "src"))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 # Mock the kybra and ic modules
 class MockPrincipal:

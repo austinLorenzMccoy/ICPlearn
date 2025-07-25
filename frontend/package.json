@@ -9,6 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dfinity/agent": "^3.1.0",
+    "@dfinity/auth-client": "^3.1.0",
+    "@dfinity/candid": "^3.1.0",
+    "@dfinity/principal": "^3.1.0",
     "@headlessui/react": "^2.2.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-avatar": "^1.1.3",

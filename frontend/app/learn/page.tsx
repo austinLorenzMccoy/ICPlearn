@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useICPBackend } from "@/hooks/useICPBackend";
 import {
     Search,
     Award,
@@ -168,6 +169,30 @@ const learningPaths = [
 export default function ICPLearningPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeTab, setActiveTab] = useState("all");
+    const { listCourses, isAuthenticated, isLoading } = useICPBackend();
+    const [realCourses, setRealCourses] = useState<any[]>([]);
+    const [coursesLoading, setCoursesLoading] = useState(true);
+
+    // Load real courses from backend
+    useEffect(() => {
+        const loadCourses = async () => {
+            try {
+                setCoursesLoading(true);
+                const coursesResult = await listCourses(1, 20);
+                if (coursesResult?.courses) {
+                    setRealCourses(coursesResult.courses);
+                }
+            } catch (error) {
+                console.error('Failed to load courses:', error);
+                // Fall back to sample data
+                setRealCourses(icpCourses);
+            } finally {
+                setCoursesLoading(false);
+            }
+        };
+
+        loadCourses();
+    }, [listCourses]);
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">

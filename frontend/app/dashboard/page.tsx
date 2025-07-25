@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useICPBackend, useCurrentUser } from "@/hooks/useICPBackend";
 import {
     Coins,
     GraduationCap,
@@ -127,6 +128,48 @@ const transactions = [
 
 export default function ICPDashboard() {
     const [chartTimeframe, setChartTimeframe] = useState("weekly");
+    const { 
+        isAuthenticated, 
+        login, 
+        getUserCount, 
+        listCourses, 
+        listUsers,
+        isLoading,
+        error 
+    } = useICPBackend();
+    const { user: currentUser, loading: userLoading } = useCurrentUser();
+    
+    const [dashboardData, setDashboardData] = useState({
+        totalUsers: 0,
+        totalCourses: 0,
+        userProgress: [],
+        recentActivity: []
+    });
+
+    // Load dashboard data
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            if (isAuthenticated) {
+                try {
+                    const [userCount, coursesResult] = await Promise.all([
+                        getUserCount(),
+                        listCourses(1, 10)
+                    ]);
+                    
+                    setDashboardData({
+                        totalUsers: userCount || 0,
+                        totalCourses: coursesResult?.total || 0,
+                        userProgress: [], // Will be populated with real course progress
+                        recentActivity: [] // Will be populated with real activity
+                    });
+                } catch (error) {
+                    console.error('Failed to load dashboard data:', error);
+                }
+            }
+        };
+
+        loadDashboardData();
+    }, [isAuthenticated, getUserCount, listCourses]);
 
     // Get data based on selected timeframe
     const getChartData = () => {
@@ -161,39 +204,39 @@ export default function ICPDashboard() {
                         onStakeMore={handleStakeMore}
                     />
 
-                    {/* Statistics Grid */}
+                    {/* Statistics Grid - Real Backend Data */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                         <StatsCard
-                            title="Total Staked"
-                            value="2,500 ICP"
-                            description="Current staking position"
+                            title="Total Users"
+                            value={dashboardData.totalUsers.toLocaleString()}
+                            description="Registered learners"
                             icon={<Coins className="h-4 w-4 text-[#3B00B9] dark:text-[#29ABE2]" />}
                             trend="up"
                             trendValue="+15%"
                         />
                         <StatsCard
-                            title="Earned Rewards"
-                            value="342 ICP"
-                            description="Lifetime earnings"
+                            title="Available Courses"
+                            value={dashboardData.totalCourses.toString()}
+                            description="Learning opportunities"
                             icon={<TrendingUp className="h-4 w-4 text-[#3B00B9] dark:text-[#29ABE2]" />}
                             trend="up"
                             trendValue="+8.2%"
                         />
                         <StatsCard
-                            title="ICP Learning Progress"
-                            value="65%"
-                            description="Course completion rate"
+                            title="Your Progress"
+                            value={currentUser ? `${Number(currentUser.level || 1)}` : "0"}
+                            description="Current level"
                             icon={<GraduationCap className="h-4 w-4 text-[#3B00B9] dark:text-[#29ABE2]" />}
                             trend="up"
                             trendValue="+12%"
                         />
                         <StatsCard
-                            title="Dissolve Delay"
-                            value="32 days"
-                            description="Remaining neuron lock time"
+                            title="Total Points"
+                            value={currentUser ? Number(currentUser.total_points || 0).toLocaleString() : "0"}
+                            description="Learning achievements"
                             icon={<Clock className="h-4 w-4 text-[#3B00B9] dark:text-[#29ABE2]" />}
-                            trend="neutral"
-                            trendValue="No change"
+                            trend="up"
+                            trendValue="Growing"
                         />
                     </div>
 

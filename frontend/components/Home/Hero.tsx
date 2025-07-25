@@ -14,8 +14,16 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+interface ICPEducationHeroProps {
+  stats?: {
+    userCount: number;
+    courseCount: number;
+    isBackendHealthy: boolean;
+  };
+}
+
 // Hero Section for ICP Education + Staking Platform
-const ICPEducationHero = () => {
+const ICPEducationHero = ({ stats }: ICPEducationHeroProps) => {
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {

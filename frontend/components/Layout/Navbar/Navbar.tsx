@@ -110,9 +110,9 @@ export default function ICPNavbar() {
                                 }}
                             >
                                 <NavLink href="/dashboard" delay={0}>Dashboard</NavLink>
-                                <NavLink href="/stake" delay={1}>Stake</NavLink>
-                                <NavLink href="/learn" delay={2}>Learn</NavLink>
-                                <NavLink href="/canisters" delay={3}>Canisters</NavLink>
+                                <NavLink href="/learn" delay={1}>Learn</NavLink>
+                                <NavLink href="/profile" delay={2}>Profile</NavLink>
+                                <NavLink href="/stake" delay={3}>Stake</NavLink>
                                 <NavLink href="/leaderboard" delay={4}>Leaderboard</NavLink>
 
                                 <DropdownMenu>

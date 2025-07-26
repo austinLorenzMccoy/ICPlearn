@@ -1,6 +1,46 @@
+type AIAgent = record {
+  id : text;
+  personality : text;
+  interaction_count : nat64;
+  updated_at : nat64;
+  system_prompt : text;
+  capabilities : vec text;
+  model_type : text;
+  name : text;
+  created_at : nat64;
+  user_id : principal;
+  agent_type : text;
+  is_active : bool;
+  rating : float64;
+};
+type AIInteraction = record {
+  id : text;
+  context : text;
+  response_time : nat64;
+  tokens_used : nat64;
+  created_at : nat64;
+  agent_id : text;
+  user_id : principal;
+  response : text;
+  prompt : text;
+  rating : opt nat64;
+};
 type AIInteractionResponse = record {
   response : AIResponse;
   prompt : AIPrompt;
+};
+type AILearningAnalytics = record {
+  retention_prediction : float64;
+  ai_confidence : float64;
+  learning_velocity : float64;
+  generated_at : nat64;
+  personalized_tips : vec text;
+  recommended_focus : vec text;
+  user_id : principal;
+  knowledge_gaps : vec text;
+  strength_areas : vec text;
+  engagement_score : float64;
+  optimal_study_times : vec text;
 };
 type AIPrompt = record {
   id : text;
@@ -16,6 +56,19 @@ type AIResponse = record {
   tokens_used : nat64;
   created_at : nat64;
   response : text;
+};
+type AITutorSession = record {
+  id : text;
+  messages : vec AIInteraction;
+  agent_id : text;
+  user_id : principal;
+  course_id : opt text;
+  learning_progress : text;
+  skill_id : opt text;
+  is_active : bool;
+  ended_at : opt nat64;
+  started_at : nat64;
+  session_type : text;
 };
 type Assessment = record {
   id : text;
@@ -49,6 +102,12 @@ type BitcoinReward = record {
   reward_metadata : text;
   amount : float64;
 };
+type ChatWithAgentParams = record {
+  context : opt text;
+  agent_id : text;
+  message : text;
+};
+type ChatWithAgentResult = variant { Ok : AIInteraction; Err : Error };
 type Course = record {
   id : text;
   title : text;
@@ -82,6 +141,15 @@ type CourseProgress = record {
   completed_modules : vec text;
   started_at : nat64;
 };
+type CreateAIAgentParams = record {
+  personality : text;
+  system_prompt : text;
+  capabilities : vec text;
+  model_type : text;
+  name : text;
+  agent_type : text;
+};
+type CreateAIAgentResult = variant { Ok : AIAgent; Err : Error };
 type CreateAssessmentParams = record {
   title : text;
   description : text;
@@ -126,9 +194,29 @@ type Error = variant {
   Unauthorized : text;
   Forbidden : text;
 };
+type GenerateContentParams = record {
+  topic : text;
+  difficulty : text;
+  content_type : text;
+  style : text;
+  length : nat64;
+  additional_params : text;
+};
+type GenerateContentResult = variant { Ok : text; Err : Error };
 type GenerateCourseContentParams = record { topic : text; difficulty : nat64 };
 type GenerateCourseContentResult = variant {
   Ok : AIInteractionResponse;
+  Err : Error;
+};
+type GenerateLearningPathParams = record {
+  user_skills : vec text;
+  preferred_difficulty : text;
+  time_commitment : nat64;
+  learning_style : text;
+  learning_goals : vec text;
+};
+type GenerateLearningPathResult = variant {
+  Ok : PersonalizedLearningPath;
   Err : Error;
 };
 type GenerateNFTMetadataParams = record {
@@ -139,9 +227,14 @@ type GenerateNFTMetadataResult = variant {
   Ok : AIInteractionResponse;
   Err : Error;
 };
+type GetAIAgentResult = variant { Ok : AIAgent; Err : Error };
 type GetAssessmentResult = variant { Ok : Assessment; Err : Error };
 type GetBitcoinRewardResult = variant { Ok : BitcoinReward; Err : Error };
 type GetCourseResult = variant { Ok : Course; Err : Error };
+type GetLearningAnalyticsResult = variant {
+  Ok : AILearningAnalytics;
+  Err : Error;
+};
 type GetSkillResult = variant { Ok : Skill; Err : Error };
 type GetUserResult = variant { Ok : User; Err : Error };
 type GetUserSkillsParams = record {
@@ -150,6 +243,13 @@ type GetUserSkillsParams = record {
   user_id : principal;
   limit : nat64;
 };
+type ListAIAgentsResponse = record {
+  total : nat64;
+  skip : nat64;
+  limit : nat64;
+  items : vec AIAgent;
+};
+type ListAIAgentsResult = variant { Ok : ListAIAgentsResponse; Err : Error };
 type ListAssessmentsParams = record {
   skip : nat64;
   limit : nat64;
@@ -211,6 +311,19 @@ type ListUsersResponse = record {
   items : vec User;
 };
 type ListUsersResult = variant { Ok : ListUsersResponse; Err : Error };
+type PersonalizedLearningPath = record {
+  id : text;
+  updated_at : nat64;
+  generated_by_agent : text;
+  created_at : nat64;
+  difficulty_progression : text;
+  user_id : principal;
+  skill_priorities : vec text;
+  adaptive_adjustments : text;
+  recommended_courses : vec text;
+  is_active : bool;
+  estimated_timeline : nat64;
+};
 type Question = record {
   id : text;
   question_text : text;
@@ -238,6 +351,14 @@ type Skill = record {
   is_active : bool;
   learning_path : vec text;
 };
+type StartTutorSessionParams = record {
+  agent_id : text;
+  course_id : opt text;
+  skill_id : opt text;
+  initial_message : text;
+  session_type : text;
+};
+type StartTutorSessionResult = variant { Ok : AITutorSession; Err : Error };
 type SubmitAssessmentParams = record {
   answers : vec nat64;
   time_taken : nat64;
@@ -289,6 +410,8 @@ type ValidateAnswerParams = record {
 };
 type ValidateAnswerResult = variant { Ok : AIInteractionResponse; Err : Error };
 service : () -> {
+  chat_with_agent : (ChatWithAgentParams) -> (ChatWithAgentResult);
+  create_ai_agent : (CreateAIAgentParams) -> (CreateAIAgentResult);
   create_assessment : (CreateAssessmentParams) -> (CreateAssessmentResult);
   create_bitcoin_reward : (CreateBitcoinRewardParams) -> (
       CreateBitcoinRewardResult,
@@ -296,27 +419,35 @@ service : () -> {
   create_course : (CreateCourseParams) -> (CreateCourseResult);
   create_skill : (CreateSkillParams) -> (CreateSkillResult);
   enroll_course : (EnrollCourseParams) -> (EnrollCourseResult);
+  generate_content : (GenerateContentParams) -> (GenerateContentResult);
   generate_course_content : (GenerateCourseContentParams) -> (
       GenerateCourseContentResult,
+    );
+  generate_learning_path : (GenerateLearningPathParams) -> (
+      GenerateLearningPathResult,
     );
   generate_nft_metadata : (GenerateNFTMetadataParams) -> (
       GenerateNFTMetadataResult,
     );
+  get_ai_agent : (text) -> (GetAIAgentResult) query;
   get_assessment_by_id : (text) -> (GetAssessmentResult) query;
   get_bitcoin_reward : (text) -> (GetBitcoinRewardResult) query;
   get_course_by_id : (text) -> (GetCourseResult) query;
   get_greeting : (text) -> (text) query;
+  get_learning_analytics : (principal) -> (GetLearningAnalyticsResult) query;
   get_skill_by_id : (text) -> (GetSkillResult) query;
   get_user_bitcoin_rewards : (principal) -> (ListBitcoinRewardsResult) query;
   get_user_by_id : (text) -> (GetUserResult) query;
   get_user_count : (text) -> (nat64) query;
   get_user_skills : (GetUserSkillsParams) -> (ListUserSkillsResult) query;
+  list_ai_agents : (nat64, nat64) -> (ListAIAgentsResult) query;
   list_assessments : (ListAssessmentsParams) -> (ListAssessmentsResult) query;
   list_courses : (ListCoursesParams) -> (ListCoursesResult) query;
   list_skills : (ListSkillsParams) -> (ListSkillsResult) query;
   list_users : (ListUsersParams) -> (ListUsersResult) query;
   process_bitcoin_reward : (text) -> (GetBitcoinRewardResult);
   register_user : (RegisterUserParams) -> (GetUserResult);
+  start_tutor_session : (StartTutorSessionParams) -> (StartTutorSessionResult);
   submit_assessment : (SubmitAssessmentParams) -> (SubmitAssessmentResult);
   update_course_progress : (UpdateProgressParams) -> (EnrollCourseResult);
   update_skill_progress : (UpdateSkillProgressParams) -> (

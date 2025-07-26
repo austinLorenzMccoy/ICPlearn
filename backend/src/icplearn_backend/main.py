@@ -1283,17 +1283,585 @@ def get_user_bitcoin_rewards(user_id: Principal) -> ListBitcoinRewardsResult:
     
     return ListBitcoinRewardsResult(Ok=mock_rewards)
 
-# Add one more simple function
+# AI Agent Service Data Structures
+class AIAgent(Record):
+    id: str
+    name: str
+    agent_type: str  # "tutor", "content_generator", "moderator", "assistant"
+    model_type: str  # "llama3.1", "deepseek", "custom"
+    capabilities: Vec[str]
+    personality: str
+    system_prompt: str
+    user_id: Principal
+    created_at: nat64
+    updated_at: nat64
+    is_active: bool
+    interaction_count: nat64
+    rating: float64
+
+class CreateAIAgentParams(Record):
+    name: str
+    agent_type: str
+    model_type: str
+    capabilities: Vec[str]
+    personality: str
+    system_prompt: str
+
+class AIInteraction(Record):
+    id: str
+    agent_id: str
+    user_id: Principal
+    prompt: str
+    response: str
+    context: str
+    tokens_used: nat64
+    response_time: nat64
+    created_at: nat64
+    rating: Opt[nat64]
+
+class ChatWithAgentParams(Record):
+    agent_id: str
+    message: str
+    context: Opt[str]
+
+class GenerateContentParams(Record):
+    content_type: str  # "course", "quiz", "explanation", "exercise"
+    topic: str
+    difficulty: str
+    length: nat64
+    style: str
+    additional_params: str  # JSON string for flexibility
+
+class AITutorSession(Record):
+    id: str
+    user_id: Principal
+    agent_id: str
+    course_id: Opt[str]
+    skill_id: Opt[str]
+    session_type: str  # "practice", "help", "assessment", "review"
+    messages: Vec['AIInteraction']
+    started_at: nat64
+    ended_at: Opt[nat64]
+    is_active: bool
+    learning_progress: str  # JSON string tracking progress
+
+class StartTutorSessionParams(Record):
+    agent_id: str
+    course_id: Opt[str]
+    skill_id: Opt[str]
+    session_type: str
+    initial_message: str
+
+class PersonalizedLearningPath(Record):
+    id: str
+    user_id: Principal
+    generated_by_agent: str
+    recommended_courses: Vec[str]
+    skill_priorities: Vec[str]
+    difficulty_progression: str
+    estimated_timeline: nat64
+    adaptive_adjustments: str  # JSON string for AI adjustments
+    created_at: nat64
+    updated_at: nat64
+    is_active: bool
+
+class GenerateLearningPathParams(Record):
+    user_skills: Vec[str]
+    learning_goals: Vec[str]
+    time_commitment: nat64  # hours per week
+    preferred_difficulty: str
+    learning_style: str
+
+# AI Agent Result Types
+class CreateAIAgentResult(Variant):
+    Ok: 'AIAgent'
+    Err: 'Error'
+
+class GetAIAgentResult(Variant):
+    Ok: 'AIAgent'
+    Err: 'Error'
+
+class ChatWithAgentResult(Variant):
+    Ok: 'AIInteraction'
+    Err: 'Error'
+
+class GenerateContentResult(Variant):
+    Ok: str  # Generated content
+    Err: 'Error'
+
+class StartTutorSessionResult(Variant):
+    Ok: 'AITutorSession'
+    Err: 'Error'
+
+class GenerateLearningPathResult(Variant):
+    Ok: 'PersonalizedLearningPath'
+    Err: 'Error'
+
+class ListAIAgentsResponse(Record):
+    items: Vec['AIAgent']
+    total: nat64
+    skip: nat64
+    limit: nat64
+
+class ListAIAgentsResult(Variant):
+    Ok: 'ListAIAgentsResponse'
+    Err: 'Error'
+
+class ListTutorSessionsResponse(Record):
+    items: Vec['AITutorSession']
+    total: nat64
+    skip: nat64
+    limit: nat64
+
+class ListTutorSessionsResult(Variant):
+    Ok: 'ListTutorSessionsResponse'
+    Err: 'Error'
+
+# Enhanced Learning Analytics with AI
+class AILearningAnalytics(Record):
+    user_id: Principal
+    learning_velocity: float64
+    knowledge_gaps: Vec[str]
+    strength_areas: Vec[str]
+    recommended_focus: Vec[str]
+    engagement_score: float64
+    retention_prediction: float64
+    optimal_study_times: Vec[str]
+    personalized_tips: Vec[str]
+    generated_at: nat64
+    ai_confidence: float64
+
+class GetLearningAnalyticsResult(Variant):
+    Ok: 'AILearningAnalytics'
+    Err: 'Error'
+
+# Add legacy functions
 @query
 def get_user_count(dummy: str) -> nat64:
     """Get the total number of users."""
     return 42
 
-# Add another simple function
 @query
 def get_greeting(name: str) -> str:
     """Get a greeting message."""
     return f"Hello, {name}!"
+
+# AI Agent Service Functions
+@update
+def create_ai_agent(params: CreateAIAgentParams) -> CreateAIAgentResult:
+    """Create a new AI agent."""
+    current_time = ic.time() // 1_000_000
+    agent_id = f"agent_{current_time}_{ic.caller()}"
+    
+    ai_agent = AIAgent(
+        id=agent_id,
+        name=params["name"],
+        agent_type=params["agent_type"],
+        model_type=params["model_type"],
+        capabilities=params["capabilities"],
+        personality=params["personality"],
+        system_prompt=params["system_prompt"],
+        user_id=ic.caller(),
+        created_at=current_time,
+        updated_at=current_time,
+        is_active=True,
+        interaction_count=0,
+        rating=5.0
+    )
+    
+    return CreateAIAgentResult(Ok=ai_agent)
+
+@query
+def get_ai_agent(agent_id: str) -> GetAIAgentResult:
+    """Get an AI agent by ID."""
+    # Mock AI agent for demonstration
+    mock_agent = AIAgent(
+        id=agent_id,
+        name="ICP Learning Tutor",
+        agent_type="tutor",
+        model_type="llama3.1",
+        capabilities=["course_explanation", "quiz_generation", "progress_tracking", "personalized_feedback"],
+        personality="friendly, patient, encouraging, knowledgeable",
+        system_prompt="You are an expert ICP blockchain tutor. Help students learn Internet Computer concepts through interactive lessons, personalized explanations, and adaptive assessments.",
+        user_id=ic.caller(),
+        created_at=1627984000000,
+        updated_at=1627984000000,
+        is_active=True,
+        interaction_count=156,
+        rating=4.8
+    )
+    
+    return GetAIAgentResult(Ok=mock_agent)
+
+@query
+def list_ai_agents(skip: nat64, limit: nat64) -> ListAIAgentsResult:
+    """List available AI agents."""
+    # Mock AI agents for demonstration
+    mock_agents = [
+        AIAgent(
+            id="agent_tutor_001",
+            name="ICP Blockchain Tutor",
+            agent_type="tutor",
+            model_type="llama3.1",
+            capabilities=["blockchain_concepts", "smart_contracts", "defi_protocols"],
+            personality="expert, patient, detailed",
+            system_prompt="Expert blockchain educator specializing in ICP technology",
+            user_id=ic.caller(),
+            created_at=1627984000000,
+            updated_at=1627984000000,
+            is_active=True,
+            interaction_count=245,
+            rating=4.9
+        ),
+        AIAgent(
+            id="agent_content_002",
+            name="Course Content Generator",
+            agent_type="content_generator",
+            model_type="deepseek",
+            capabilities=["course_creation", "quiz_generation", "exercise_design"],
+            personality="creative, structured, comprehensive",
+            system_prompt="AI specialized in creating educational content for blockchain and Web3 topics",
+            user_id=ic.caller(),
+            created_at=1627984001000,
+            updated_at=1627984001000,
+            is_active=True,
+            interaction_count=89,
+            rating=4.7
+        ),
+        AIAgent(
+            id="agent_assistant_003",
+            name="Learning Assistant",
+            agent_type="assistant",
+            model_type="llama3.1",
+            capabilities=["study_planning", "progress_tracking", "motivation"],
+            personality="supportive, organized, motivational",
+            system_prompt="Personal learning assistant helping students achieve their educational goals",
+            user_id=ic.caller(),
+            created_at=1627984002000,
+            updated_at=1627984002000,
+            is_active=True,
+            interaction_count=312,
+            rating=4.6
+        )
+    ]
+    
+    response = ListAIAgentsResponse(
+        items=mock_agents,
+        total=3,
+        skip=skip,
+        limit=limit
+    )
+    
+    return ListAIAgentsResult(Ok=response)
+
+@update
+def chat_with_agent(params: ChatWithAgentParams) -> ChatWithAgentResult:
+    """Chat with an AI agent."""
+    current_time = ic.time() // 1_000_000
+    interaction_id = f"interaction_{current_time}"
+    
+    # Simulate AI response based on agent type and message
+    message = params["message"].lower()
+    agent_id = params["agent_id"]
+    
+    # Generate contextual response based on message content
+    if "icp" in message or "internet computer" in message:
+        response = "The Internet Computer (ICP) is a revolutionary blockchain that can host smart contracts at web speed. It uses a unique consensus mechanism called Chain Key Technology, enabling direct integration with Bitcoin and Ethereum. Would you like me to explain any specific aspect of ICP in more detail?"
+    elif "smart contract" in message or "canister" in message:
+        response = "Smart contracts on ICP are called 'canisters'. They can store data, serve web pages, and interact with other blockchains. Canisters are more powerful than traditional smart contracts because they can make HTTP requests and store large amounts of data efficiently. What would you like to learn about canister development?"
+    elif "kybra" in message or "python" in message:
+        response = "Kybra is ICP's Python CDK (Canister Development Kit) that allows you to build canisters using Python. It provides a familiar development experience while leveraging ICP's unique capabilities. I can help you understand Kybra's features, data structures, and best practices. What specific aspect interests you?"
+    elif "help" in message or "learn" in message:
+        response = "I'm here to help you master ICP blockchain development! I can assist with: 🔹 Blockchain fundamentals 🔹 Smart contract development 🔹 DeFi protocols 🔹 NFT creation 🔹 Frontend integration 🔹 Best practices. What topic would you like to explore first?"
+    else:
+        response = f"Thank you for your message: '{params['message']}'. As your AI learning assistant, I'm here to help you understand complex concepts, provide personalized explanations, and guide your learning journey. How can I assist you with your ICP blockchain education today?"
+    
+    interaction = AIInteraction(
+        id=interaction_id,
+        agent_id=agent_id,
+        user_id=ic.caller(),
+        prompt=params["message"],
+        response=response,
+        context=params["context"] if params["context"] is not None else "",
+        tokens_used=len(response) // 4,  # Rough token estimation
+        response_time=150,  # Simulated response time in ms
+        created_at=current_time,
+        rating=None
+    )
+    
+    return ChatWithAgentResult(Ok=interaction)
+
+@update
+def generate_content(params: GenerateContentParams) -> GenerateContentResult:
+    """Generate educational content using AI."""
+    content_type = params["content_type"]
+    topic = params["topic"]
+    difficulty = params["difficulty"]
+    
+    if content_type == "course":
+        content = f"""# {topic.title()} Course - {difficulty.title()} Level
+
+## Course Overview
+This comprehensive course covers {topic} from {difficulty} perspective, designed for learners who want to master this essential blockchain concept.
+
+## Learning Objectives
+- Understand core {topic} principles
+- Apply {topic} in real-world scenarios
+- Build practical projects using {topic}
+- Integrate {topic} with ICP ecosystem
+
+## Module 1: Introduction to {topic}
+{topic} is a fundamental concept in blockchain technology that enables...
+
+## Module 2: Practical Applications
+In this module, we'll explore how {topic} is used in:
+- DeFi protocols
+- NFT marketplaces
+- DAO governance
+- Cross-chain bridges
+
+## Module 3: Hands-on Development
+Build your first {topic} application:
+1. Set up development environment
+2. Create basic structure
+3. Implement core functionality
+4. Test and deploy
+
+## Assessment
+Complete the final project to demonstrate your mastery of {topic}."""
+    
+    elif content_type == "quiz":
+        content = f"""# {topic.title()} Quiz - {difficulty.title()} Level
+
+## Question 1
+What is the primary purpose of {topic} in blockchain systems?
+A) Data storage
+B) Transaction validation
+C) Network consensus
+D) User authentication
+
+**Correct Answer: B**
+**Explanation:** {topic} plays a crucial role in transaction validation by...
+
+## Question 2
+Which of the following best describes {topic} implementation on ICP?
+A) Centralized approach
+B) Hybrid model
+C) Fully decentralized
+D) Off-chain solution
+
+**Correct Answer: C**
+**Explanation:** ICP implements {topic} in a fully decentralized manner through...
+
+## Question 3
+What are the main benefits of using {topic} in your dApp?
+A) Improved security
+B) Better performance
+C) Enhanced user experience
+D) All of the above
+
+**Correct Answer: D**
+**Explanation:** {topic} provides comprehensive benefits including security, performance, and UX improvements."""
+    
+    elif content_type == "explanation":
+        content = f"""# Understanding {topic.title()}
+
+## What is {topic}?
+{topic.title()} is a key concept in blockchain technology that enables developers to create more efficient and secure applications.
+
+## How it Works
+The {topic} mechanism operates through:
+1. **Initialization**: Setting up the basic framework
+2. **Processing**: Handling incoming requests and data
+3. **Validation**: Ensuring data integrity and security
+4. **Execution**: Performing the required operations
+
+## Key Benefits
+- **Security**: Enhanced protection against common vulnerabilities
+- **Efficiency**: Optimized performance for high-throughput applications
+- **Scalability**: Ability to handle growing user demands
+- **Interoperability**: Seamless integration with other systems
+
+## Real-world Applications
+{topic.title()} is commonly used in:
+- Decentralized Finance (DeFi) protocols
+- Non-Fungible Token (NFT) marketplaces
+- Decentralized Autonomous Organizations (DAOs)
+- Cross-chain bridge solutions
+
+## Best Practices
+When implementing {topic}, consider:
+- Proper error handling
+- Gas optimization
+- Security audits
+- User experience design
+
+## Next Steps
+To master {topic}, practice with hands-on projects and explore advanced use cases."""
+    
+    else:  # exercise
+        content = f"""# {topic.title()} Coding Exercise - {difficulty.title()}
+
+## Exercise Overview
+Implement a {topic} solution that demonstrates your understanding of core concepts.
+
+## Requirements
+1. Create a new canister project
+2. Implement {topic} functionality
+3. Add proper error handling
+4. Include comprehensive tests
+5. Deploy to local replica
+
+## Starter Code
+```python
+from kybra import *
+
+class {topic.title().replace(' ', '')}(Record):
+    id: str
+    # Add your fields here
+    
+@update
+def create_{topic.lower().replace(' ', '_')}(params: dict) -> str:
+    # Implement your logic here
+    pass
+    
+@query
+def get_{topic.lower().replace(' ', '_')}(id: str) -> str:
+    # Implement your logic here
+    pass
+```
+
+## Testing Instructions
+1. Deploy your canister: `dfx deploy`
+2. Test create function: `dfx canister call your_canister create_{topic.lower().replace(' ', '_')}`
+3. Test query function: `dfx canister call your_canister get_{topic.lower().replace(' ', '_')}`
+
+## Evaluation Criteria
+- Code quality and organization
+- Proper use of {topic} concepts
+- Error handling implementation
+- Test coverage
+- Documentation quality
+
+## Bonus Challenges
+- Add advanced features
+- Optimize for gas efficiency
+- Implement additional security measures
+- Create a frontend interface"""
+    
+    return GenerateContentResult(Ok=content)
+
+@update
+def start_tutor_session(params: StartTutorSessionParams) -> StartTutorSessionResult:
+    """Start a new AI tutoring session."""
+    current_time = ic.time() // 1_000_000
+    session_id = f"session_{current_time}"
+    
+    # Create initial interaction
+    initial_interaction = AIInteraction(
+        id=f"interaction_{current_time}_001",
+        agent_id=params["agent_id"],
+        user_id=ic.caller(),
+        prompt=params["initial_message"],
+        response="Hello! I'm excited to help you learn. Based on your message, I can see you're interested in exploring new concepts. Let's start with the fundamentals and build up your knowledge step by step. What specific area would you like to focus on first?",
+        context="session_start",
+        tokens_used=45,
+        response_time=120,
+        created_at=current_time,
+        rating=None
+    )
+    
+    tutor_session = AITutorSession(
+        id=session_id,
+        user_id=ic.caller(),
+        agent_id=params["agent_id"],
+        course_id=params["course_id"],
+        skill_id=params["skill_id"],
+        session_type=params["session_type"],
+        messages=[initial_interaction],
+        started_at=current_time,
+        ended_at=None,
+        is_active=True,
+        learning_progress='{"concepts_covered": [], "difficulty_level": "beginner", "engagement_score": 0.8}'
+    )
+    
+    return StartTutorSessionResult(Ok=tutor_session)
+
+@update
+def generate_learning_path(params: GenerateLearningPathParams) -> GenerateLearningPathResult:
+    """Generate a personalized learning path using AI."""
+    current_time = ic.time() // 1_000_000
+    path_id = f"path_{current_time}"
+    
+    # AI-generated learning path based on user parameters
+    user_skills = params["user_skills"]
+    learning_goals = params["learning_goals"]
+    difficulty = params["preferred_difficulty"]
+    
+    # Determine recommended courses based on skills and goals
+    recommended_courses = []
+    skill_priorities = []
+    
+    if "blockchain" in str(learning_goals).lower():
+        recommended_courses.extend(["blockchain_fundamentals", "smart_contracts_101", "defi_protocols"])
+        skill_priorities.extend(["consensus_mechanisms", "cryptography", "distributed_systems"])
+    
+    if "icp" in str(learning_goals).lower() or "internet_computer" in str(learning_goals).lower():
+        recommended_courses.extend(["icp_architecture", "canister_development", "chain_fusion"])
+        skill_priorities.extend(["motoko_programming", "kybra_python", "frontend_integration"])
+    
+    if "defi" in str(learning_goals).lower():
+        recommended_courses.extend(["defi_fundamentals", "liquidity_pools", "yield_farming"])
+        skill_priorities.extend(["amm_protocols", "governance_tokens", "risk_management"])
+    
+    # Default courses if no specific goals
+    if not recommended_courses:
+        recommended_courses = ["blockchain_basics", "web3_introduction", "smart_contract_security"]
+        skill_priorities = ["programming_fundamentals", "blockchain_concepts", "security_practices"]
+    
+    learning_path = PersonalizedLearningPath(
+        id=path_id,
+        user_id=ic.caller(),
+        generated_by_agent="agent_learning_path_ai",
+        recommended_courses=recommended_courses,
+        skill_priorities=skill_priorities,
+        difficulty_progression=f"Start with {difficulty} level, progress to intermediate, then advanced",
+        estimated_timeline=params["time_commitment"] * 12,  # weeks based on hours per week
+        adaptive_adjustments='{"learning_style_adaptations": "visual_learner", "pacing_adjustments": "standard", "difficulty_scaling": "gradual"}',
+        created_at=current_time,
+        updated_at=current_time,
+        is_active=True
+    )
+    
+    return GenerateLearningPathResult(Ok=learning_path)
+
+@query
+def get_learning_analytics(user_id: Principal) -> GetLearningAnalyticsResult:
+    """Get AI-powered learning analytics for a user."""
+    current_time = ic.time() // 1_000_000
+    
+    # AI-generated learning analytics
+    analytics = AILearningAnalytics(
+        user_id=user_id,
+        learning_velocity=0.75,  # Learning speed score (0-1)
+        knowledge_gaps=["advanced_cryptography", "consensus_algorithms", "cross_chain_protocols"],
+        strength_areas=["smart_contract_basics", "frontend_development", "user_experience_design"],
+        recommended_focus=["defi_protocols", "nft_development", "dao_governance"],
+        engagement_score=0.82,  # User engagement level (0-1)
+        retention_prediction=0.88,  # Predicted knowledge retention (0-1)
+        optimal_study_times=["09:00-11:00", "14:00-16:00", "19:00-21:00"],
+        personalized_tips=[
+            "Focus on hands-on coding exercises to reinforce theoretical concepts",
+            "Join study groups to discuss complex topics with peers",
+            "Take regular breaks every 45 minutes to maintain concentration",
+            "Review previous lessons before starting new topics",
+            "Practice explaining concepts to others to deepen understanding"
+        ],
+        generated_at=current_time,
+        ai_confidence=0.91  # AI confidence in recommendations (0-1)
+    )
+    
+    return GetLearningAnalyticsResult(Ok=analytics)
 
 # Lifecycle functions
 @init

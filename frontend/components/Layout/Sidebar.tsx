@@ -82,7 +82,8 @@ export default function ICPSidebar() {
                 isCollapsed ? "w-16" : "w-64"
             )}
         >
-            <div className="flex items-center justify-end p-4">
+            <div className="flex items-center justify-between p-3 pt-2">
+                <div className="flex-1" />
                 <Button
                     variant="ghost"
                     size="icon"
@@ -286,3 +287,5 @@ export default function ICPSidebar() {
         </div>
     );
 }
+
+

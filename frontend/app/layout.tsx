@@ -20,9 +20,7 @@ export const metadata: Metadata = {
   title: "ICPlearn - Decentralized AI-Powered Learning Platform",
   description: "Transform your education with AI-powered courses, Bitcoin rewards, and decentralized learning on the Internet Computer Protocol. Earn while you learn with ICPlearn.",
   keywords: "ICP, Internet Computer, blockchain education, AI learning, Bitcoin rewards, decentralized education, Web3 learning",
-  authors: [{ name: "ICPlearn Team" }],
-  viewport: "width=device-width, initial-scale=1",
-  themeColor: "#3B00B9",
+  authors: [{ name: "Theophilus & Austin" }],
   openGraph: {
     title: "ICPlearn - Decentralized AI-Powered Learning Platform",
     description: "Transform your education with AI-powered courses, Bitcoin rewards, and decentralized learning on the Internet Computer Protocol.",
@@ -46,11 +44,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthWrapper>
+        {/* <AuthWrapper> */}
           <Navbar />
           {children}
           <Footer />
-        </AuthWrapper>
+        {/* </AuthWrapper> */}
       </body>
     </html>
   );

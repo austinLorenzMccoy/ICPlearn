@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import ICPSidebar from '@/components/Layout/Sidebar';
 
 interface Tool {
   id: string;
@@ -219,9 +220,10 @@ const result = await actor.greet('World');`,
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <div className="flex">
+        <ICPSidebar />
+        <main className="flex-1 pt-20 px-6 max-w-6xl mx-auto pb-12">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -489,7 +491,7 @@ const result = await actor.greet('World');`,
               </div>
             </TabsContent>
           </Tabs>
-        </div>
+        </main>  
       </div>
     </div>
   );

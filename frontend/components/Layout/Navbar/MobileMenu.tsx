@@ -2,19 +2,29 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { X, ChevronRight, BookOpen, Wallet, GraduationCap, Trophy, Users, Zap, Sparkles, Cpu, Code, BarChart } from "lucide-react";
+import { X, ChevronRight, BookOpen, User, GraduationCap, Trophy, Users, Zap, Sparkles, Cpu, Code, BarChart, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import WalletButton from "@/components/Shared/WalletButton";
 
 interface MobileMenuProps {
     isOpen: boolean;
     onClose: () => void;
+    isAuthenticated?: boolean;
+    principal?: string | null;
+    onLogin?: () => void;
+    onLogout?: () => void;
 }
 
-export default function ICPMobileMenu({ isOpen, onClose }: MobileMenuProps) {
+export default function ICPMobileMenu({ 
+    isOpen, 
+    onClose, 
+    isAuthenticated = false, 
+    principal = null, 
+    onLogin, 
+    onLogout 
+}: MobileMenuProps) {
     const menuItems = [
         { name: "Dashboard", href: "/dashboard", icon: <BarChart className="h-5 w-5" />, color: "from-[#3B00B9]/20 to-[#29ABE2]/20" },
-        { name: "Stake ICP", href: "/stake", icon: <Wallet className="h-5 w-5" />, color: "from-[#ED1E79]/20 to-[#F15A24]/20" },
+        { name: "Stake ICP", href: "/stake", icon: <Zap className="h-5 w-5" />, color: "from-[#ED1E79]/20 to-[#F15A24]/20" },
         { name: "Learn", href: "/learn", icon: <GraduationCap className="h-5 w-5" />, color: "from-[#29ABE2]/20 to-[#3B00B9]/20" },
         { name: "Canisters", href: "/canisters", icon: <Cpu className="h-5 w-5" />, color: "from-[#F15A24]/20 to-[#ED1E79]/20" },
         { name: "Leaderboard", href: "/leaderboard", icon: <Trophy className="h-5 w-5" />, color: "from-[#29ABE2]/20 to-[#ED1E79]/20" },
@@ -90,6 +100,21 @@ export default function ICPMobileMenu({ isOpen, onClose }: MobileMenuProps) {
         onClose();
     };
 
+    const formatPrincipal = (principal: string) => {
+        if (!principal) return "";
+        return `${principal.slice(0, 8)}...${principal.slice(-8)}`;
+    };
+
+    const handleLogin = () => {
+        onLogin?.();
+        onClose();
+    };
+
+    const handleLogout = () => {
+        onLogout?.();
+        onClose();
+    };
+
     return (
         <AnimatePresence mode="wait">
             {isOpen && (
@@ -139,6 +164,28 @@ export default function ICPMobileMenu({ isOpen, onClose }: MobileMenuProps) {
                             {/* Background graphic elements */}
                             <div className="absolute top-20 right-0 -mr-16 h-32 w-32 rounded-full bg-gradient-to-br from-[#3B00B9]/10 to-[#29ABE2]/10 blur-2xl" />
                             <div className="absolute bottom-40 left-0 -ml-16 h-40 w-40 rounded-full bg-gradient-to-br from-[#ED1E79]/10 to-[#F15A24]/10 blur-2xl" />
+
+                            {/* User Identity Section */}
+                            {isAuthenticated && principal && (
+                                <motion.div
+                                    className="px-4 py-4 border-b border-white/10 bg-black/10"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2, duration: 0.3 }}
+                                >
+                                    <div className="flex items-center space-x-3">
+                                        <div className="bg-gradient-to-br from-[#3B00B9]/20 to-[#29ABE2]/20 p-2.5 rounded-lg border border-white/10">
+                                            <User className="h-5 w-5 text-[#29ABE2]" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-white">Internet Identity</p>
+                                            <p className="text-xs text-white/60 font-mono truncate">
+                                                {formatPrincipal(principal)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            )}
 
                             {/* Navigation section */}
                             <div className="flex-1 overflow-y-auto py-6 px-4 space-y-6">
@@ -234,14 +281,42 @@ export default function ICPMobileMenu({ isOpen, onClose }: MobileMenuProps) {
                                 </motion.div>
                             </div>
 
-                            {/* Wallet button section */}
+                            {/* Internet Identity section */}
                             <motion.div
                                 className="px-4 py-4 mt-auto border-t border-white/10 bg-black/20"
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.5, duration: 0.4 }}
                             >
-                                <WalletButton mobile className="w-full" />
+                                {isAuthenticated ? (
+                                    <div className="space-y-3">
+                                        <Link href="/profile" onClick={handleLinkClick}>
+                                            <Button 
+                                                variant="outline" 
+                                                className="w-full bg-white/5 border-white/20 text-white hover:bg-white/10 hover:border-white/30"
+                                            >
+                                                <User className="h-4 w-4 mr-2" />
+                                                View Profile
+                                            </Button>
+                                        </Link>
+                                        <Button 
+                                            onClick={handleLogout}
+                                            variant="outline"
+                                            className="w-full bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50"
+                                        >
+                                            <LogOut className="h-4 w-4 mr-2" />
+                                            Logout
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <Button 
+                                        onClick={handleLogin}
+                                        className="w-full bg-gradient-to-r from-[#3B00B9] to-[#29ABE2] hover:from-[#2D0088] hover:to-[#1E8BB8] text-white font-medium shadow-lg"
+                                    >
+                                        <User className="h-4 w-4 mr-2" />
+                                        Internet Identity
+                                    </Button>
+                                )}
                             </motion.div>
                         </div>
                     </motion.div>

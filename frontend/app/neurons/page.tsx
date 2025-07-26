@@ -294,47 +294,104 @@ const NeuronCard = ({ neuron }: { neuron: Neuron }) => {
 };
 
 // Create Neuron Dialog Component
+// Enhanced Create Neuron Dialog Component with better functionality
 const CreateNeuronDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     const [stakeAmount, setStakeAmount] = useState(10);
     const [dissolveDelay, setDissolveDelay] = useState(365);
+    const [isCreating, setIsCreating] = useState(false);
 
     const maxBalance = 5000;
+    const minStake = 1;
+    const minDissolveDelay = 180; // 6 months
+    const maxDissolveDelay = 2920; // 8 years
 
     const formatDissolveDelay = (days: number) => {
         const years = Math.floor(days / 365);
         const months = Math.floor((days % 365) / 30);
-        return years > 0 ? `${years} year${years > 1 ? 's' : ''} ${months} month${months !== 1 ? 's' : ''}` : `${months} month${months !== 1 ? 's' : ''}`;
+        if (years > 0) {
+            return `${years} year${years > 1 ? 's' : ''} ${months > 0 ? ` ${months} month${months !== 1 ? 's' : ''}` : ''}`;
+        }
+        return `${months} month${months !== 1 ? 's' : ''}`;
     };
+
+    const calculateVotingPower = (stake: number, delay: number) => {
+        // Simplified voting power calculation
+        const delayBonus = Math.min(delay / 365, 8); // Max 8 years
+        const baseVotingPower = (stake / 100000) * 100; // Simplified formula
+        return (baseVotingPower * (1 + delayBonus)).toFixed(2);
+    };
+
+    const calculateEstimatedRewards = (stake: number, delay: number) => {
+        // Simplified rewards calculation (annual)
+        const baseRewardRate = 0.10; // 10% base rate
+        const delayMultiplier = Math.min(delay / 365, 8) * 0.05; // Additional 5% per year
+        return (stake * (baseRewardRate + delayMultiplier)).toFixed(2);
+    };
+
+    const handleCreateNeuron = async () => {
+        setIsCreating(true);
+        
+        // Simulate API call
+        try {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Here you would typically call your backend API
+            console.log('Creating neuron with:', { stakeAmount, dissolveDelay });
+            
+            // Reset form and close modal
+            setStakeAmount(10);
+            setDissolveDelay(365);
+            onClose();
+            
+            // Show success message (you might want to use a toast library)
+            alert('Neuron created successfully!');
+        } catch (error) {
+            console.error('Error creating neuron:', error);
+            alert('Failed to create neuron. Please try again.');
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
+    const isValidStake = stakeAmount >= minStake && stakeAmount <= maxBalance;
+    const isValidDelay = dissolveDelay >= minDissolveDelay && dissolveDelay <= maxDissolveDelay;
+    const canCreate = isValidStake && isValidDelay && !isCreating;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <DialogContent className="sm:max-w-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
                 <DialogHeader>
-                    <DialogTitle className="text-gray-900 dark:text-white">Create New Neuron</DialogTitle>
+                    <DialogTitle className="text-gray-900 dark:text-white flex items-center">
+                        <Zap className="h-5 w-5 text-[#3B00B9] dark:text-[#29ABE2] mr-2" />
+                        Create New Neuron
+                    </DialogTitle>
                     <DialogDescription className="text-gray-600 dark:text-gray-300">
-                        Set up a new neuron to participate in Internet Computer governance.
+                        Set up a new neuron to participate in Internet Computer governance and earn rewards.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-6 py-4">
+                    {/* Stake Amount Section */}
                     <div>
                         <label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">
-                            Stake Amount
+                            Stake Amount (ICP)
                         </label>
                         <div className="relative">
                             <Input
                                 type="number"
                                 value={stakeAmount}
-                                onChange={(e) => setStakeAmount(Number(e.target.value))}
-                                className="pr-16 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600"
-                                min={1}
+                                onChange={(e) => setStakeAmount(Math.max(0, Number(e.target.value)))}
+                                className="pr-16 bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white"
+                                min={minStake}
                                 max={maxBalance}
+                                placeholder="Enter stake amount"
                             />
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="absolute right-1 top-1 h-8 text-[#3B00B9] dark:text-[#29ABE2]"
+                                className="absolute right-1 top-1 h-8 text-[#3B00B9] dark:text-[#29ABE2] hover:bg-[#3B00B9]/10"
                                 onClick={() => setStakeAmount(maxBalance)}
+                                type="button"
                             >
                                 MAX
                             </Button>
@@ -342,23 +399,31 @@ const CreateNeuronDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                         <Slider
                             value={[stakeAmount]}
                             max={maxBalance}
+                            min={minStake}
                             step={1}
                             onValueChange={(value) => setStakeAmount(value[0])}
-                            className="mt-2"
+                            className="mt-3"
                         />
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            Balance: {maxBalance.toLocaleString()} ICP
-                        </p>
+                        <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            <span>Min: {minStake} ICP</span>
+                            <span>Balance: {maxBalance.toLocaleString()} ICP</span>
+                        </div>
+                        {!isValidStake && (
+                            <p className="text-xs text-red-500 mt-1">
+                                Stake must be between {minStake} and {maxBalance.toLocaleString()} ICP
+                            </p>
+                        )}
                     </div>
 
+                    {/* Dissolve Delay Section */}
                     <div>
                         <label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">
                             Dissolve Delay: {formatDissolveDelay(dissolveDelay)}
                         </label>
                         <Slider
                             value={[dissolveDelay]}
-                            max={2920} // 8 years
-                            min={180} // 6 months
+                            max={maxDissolveDelay}
+                            min={minDissolveDelay}
                             step={30}
                             onValueChange={(value) => setDissolveDelay(value[0])}
                             className="mt-2"
@@ -367,33 +432,86 @@ const CreateNeuronDialog = ({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                             <span>6 months</span>
                             <span>8 years</span>
                         </div>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                            Longer dissolve delays provide higher voting power and rewards. You can change this later.
+                        </p>
                     </div>
 
-                    <div className="bg-gradient-to-r from-[#3B00B9]/5 to-[#29ABE2]/5 dark:from-[#3B00B9]/10 dark:to-[#29ABE2]/10 rounded-md p-4 border border-[#29ABE2]/10 dark:border-[#29ABE2]/20">
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-2">Neuron Summary</h4>
-                        <div className="space-y-1 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-300">Voting Power:</span>
-                                <span className="font-medium text-[#3B00B9] dark:text-[#29ABE2]">
-                                    ~{((stakeAmount * dissolveDelay) / 100000).toFixed(2)}%
-                                </span>
+                    {/* Neuron Summary */}
+                    <div className="bg-gradient-to-r from-[#3B00B9]/5 to-[#29ABE2]/5 dark:from-[#3B00B9]/10 dark:to-[#29ABE2]/10 rounded-lg p-4 border border-[#29ABE2]/20 dark:border-[#29ABE2]/30">
+                        <h4 className="font-medium text-gray-900 dark:text-white mb-3 flex items-center">
+                            <BarChart className="h-4 w-4 mr-2 text-[#3B00B9] dark:text-[#29ABE2]" />
+                            Neuron Summary
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="space-y-2">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-300">Voting Power:</span>
+                                    <span className="font-medium text-[#3B00B9] dark:text-[#29ABE2]">
+                                        {calculateVotingPower(stakeAmount, dissolveDelay)}%
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-300">Est. Annual Rewards:</span>
+                                    <span className="font-medium text-[#50C878]">
+                                        {calculateEstimatedRewards(stakeAmount, dissolveDelay)} ICP
+                                    </span>
+                                </div>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-600 dark:text-gray-300">Est. Annual Rewards:</span>
-                                <span className="font-medium text-[#50C878]">
-                                    ~{(stakeAmount * 0.1 * (dissolveDelay / 365)).toFixed(2)} ICP
-                                </span>
+                            <div className="space-y-2">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-300">Maturity:</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">0 ICP</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600 dark:text-gray-300">Age Bonus:</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">0 days</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Warning/Info Section */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                        <div className="flex items-start">
+                            <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mr-2 mt-0.5 flex-shrink-0" />
+                            <div className="text-sm">
+                                <p className="font-medium text-blue-900 dark:text-blue-100 mb-1">Important:</p>
+                                <ul className="text-blue-800 dark:text-blue-200 space-y-1 text-xs">
+                                    <li>• Once created, your ICP will be locked for the specified dissolve delay</li>
+                                    <li>• You can start dissolving anytime, but it takes the full delay period</li>
+                                    <li>• Voting participation increases your rewards</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <DialogFooter>
-                    <Button variant="outline" onClick={onClose} className="border-gray-200 dark:border-gray-600">
+                <DialogFooter className="flex justify-between sm:justify-between">
+                    <Button 
+                        variant="outline" 
+                        onClick={onClose}
+                        disabled={isCreating}
+                        className="border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+                    >
                         Cancel
                     </Button>
-                    <Button className="bg-gradient-to-r from-[#3B00B9] to-[#29ABE2] hover:from-[#2E0092] hover:to-[#1E8FBF] text-white">
-                        Create Neuron
+                    <Button 
+                        onClick={handleCreateNeuron}
+                        disabled={!canCreate}
+                        className="bg-gradient-to-r from-[#3B00B9] to-[#29ABE2] hover:from-[#2E0092] hover:to-[#1E8FBF] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isCreating ? (
+                            <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Creating...
+                            </>
+                        ) : (
+                            <>
+                                <Zap className="h-4 w-4 mr-2" />
+                                Create Neuron
+                            </>
+                        )}
                     </Button>
                 </DialogFooter>
             </DialogContent>

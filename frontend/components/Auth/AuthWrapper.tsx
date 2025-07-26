@@ -1,10 +1,5 @@
-/**
- * Authentication Wrapper - Handles login flow and authentication state
- */
-
 'use client';
 
-import { useEffect } from 'react';
 import { useICPBackend } from '@/hooks/useICPBackend';
 import { motion } from 'framer-motion';
 import { Shield, Loader2, AlertCircle, LogIn } from 'lucide-react';

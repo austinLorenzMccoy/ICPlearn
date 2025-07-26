@@ -1,11 +1,6 @@
-/**
- * User Profile Component - Displays user information with ICP integration
- */
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { 
   User, 
   Mail, 
@@ -18,7 +13,6 @@ import {
   Coins,
   TrendingUp,
   Award,
-  Settings,
   LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';

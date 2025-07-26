@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Menu, BookOpen, Users, BarChart, Layers, Sparkles, Code, Cpu } from "lucide-react";
+import { Menu, BookOpen, Users, BarChart, Layers, Sparkles, Code, User, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,14 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import NavLink from "./NavLink";
 import MobileMenu from "./MobileMenu";
-import WalletButton from "@/components/Shared/WalletButton";
 import ICPLogo from "./Logo";
 
 export default function ICPNavbar() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-    const [isVisible, setIsVisible] = useState(true);
-    const [lastScrollY, setLastScrollY] = useState(0);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [principal, setPrincipal] = useState<string | null>(null);
 
     // Handle scroll effects for navbar
     useEffect(() => {
@@ -33,20 +32,11 @@ export default function ICPNavbar() {
             } else {
                 setScrolled(false);
             }
-
-            // Hide/show navbar based on scroll direction
-            if (currentScrollY > lastScrollY && currentScrollY > 80) {
-                setIsVisible(false);
-            } else {
-                setIsVisible(true);
-            }
-
-            setLastScrollY(currentScrollY);
         };
 
         window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
-    }, [lastScrollY]);
+    }, []);
 
     // Close mobile menu on escape key
     useEffect(() => {
@@ -73,6 +63,36 @@ export default function ICPNavbar() {
         };
     }, [mobileMenuOpen]);
 
+    // Internet Identity Login
+    const handleLogin = async () => {
+        try {
+            // Here you would integrate with Internet Identity
+            // For now, we'll simulate login
+            setIsAuthenticated(true);
+            setPrincipal("rdmx6-jaaaa-aaaah-qcaaw-cai"); // Mock principal
+            console.log("Login with Internet Identity");
+        } catch (error) {
+            console.error("Login failed:", error);
+        }
+    };
+
+    // Internet Identity Logout
+    const handleLogout = async () => {
+        try {
+            setIsAuthenticated(false);
+            setPrincipal(null);
+            console.log("Logout from Internet Identity");
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
+    };
+
+    // Format principal for display
+    const formatPrincipal = (principal: string) => {
+        if (!principal) return "";
+        return `${principal.slice(0, 5)}...${principal.slice(-5)}`;
+    };
+
     return (
         <>
             <motion.nav
@@ -81,8 +101,8 @@ export default function ICPNavbar() {
                         ? "bg-[#0A0B1A]/90 backdrop-blur-xl shadow-xl border-b border-white/10"
                         : "bg-gradient-to-r from-[#0A0B1A] via-[#1A1B2E] to-[#2D1B69]/20"
                 }`}
-                initial={{ y: -100 }}
-                animate={{ y: isVisible ? 0 : -100 }}
+                initial={{ y: 0 }}
+                animate={{ y: 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
             >
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -169,16 +189,62 @@ export default function ICPNavbar() {
                             </motion.div>
                         </div>
 
-                        {/* Right Side - Wallet + Mobile Menu */}
+                        {/* Right Side - Internet Identity + Mobile Menu */}
                         <div className="flex items-center space-x-3">
-                            {/* Wallet Connect Button - Desktop */}
+                            {/* Internet Identity - Desktop */}
                             <motion.div
                                 className="hidden lg:block"
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ duration: 0.5, delay: 0.4 }}
                             >
-                                <WalletButton className="shadow-lg shadow-[#3B00B9]/20" />
+                                {isAuthenticated ? (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button 
+                                                variant="outline" 
+                                                className="bg-gradient-to-r from-[#3B00B9] to-[#29ABE2] hover:from-[#2D0088] hover:to-[#1E8BB8] text-white border-none shadow-lg"
+                                            >
+                                                <User className="h-4 w-4 mr-2" />
+                                                {formatPrincipal(principal || "")}
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent
+                                            align="end"
+                                            className="bg-[#0A0B1A]/95 backdrop-blur-xl text-white border-[#3B00B9]/30 shadow-2xl p-2 w-56 rounded-xl"
+                                        >
+                                            <div className="px-3 py-2 text-sm text-gray-300">
+                                                <div className="font-medium">Principal ID</div>
+                                                <div className="text-xs font-mono text-gray-400 break-all">
+                                                    {principal}
+                                                </div>
+                                            </div>
+                                            <DropdownMenuSeparator className="bg-white/10 my-2" />
+                                            <DropdownMenuItem className="focus:bg-white/10 rounded-lg transition-colors duration-200 cursor-pointer">
+                                                <a href="/profile" className="flex w-full items-center py-2">
+                                                    <User className="mr-3 h-4 w-4 text-[#29ABE2]" />
+                                                    <span>Profile</span>
+                                                </a>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuSeparator className="bg-white/10 my-2" />
+                                            <DropdownMenuItem 
+                                                className="focus:bg-red-500/20 rounded-lg transition-colors duration-200 cursor-pointer"
+                                                onClick={handleLogout}
+                                            >
+                                                <LogOut className="mr-3 h-4 w-4 text-red-400" />
+                                                <span>Logout</span>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                ) : (
+                                    <Button 
+                                        onClick={handleLogin}
+                                        className="bg-gradient-to-r from-[#3B00B9] to-[#29ABE2] hover:from-[#2D0088] hover:to-[#1E8BB8] text-white shadow-lg shadow-[#3B00B9]/20"
+                                    >
+                                        <User className="h-4 w-4 mr-2" />
+                                        Internet Identity
+                                    </Button>
+                                )}
                             </motion.div>
 
                             {/* Mobile Menu Button */}
@@ -247,7 +313,11 @@ export default function ICPNavbar() {
             {/* Mobile Menu with improved functionality */}
             <MobileMenu 
                 isOpen={mobileMenuOpen} 
-                onClose={() => setMobileMenuOpen(false)} 
+                onClose={() => setMobileMenuOpen(false)}
+                isAuthenticated={isAuthenticated}
+                principal={principal}
+                onLogin={handleLogin}
+                onLogout={handleLogout}
             />
         </>
     );
